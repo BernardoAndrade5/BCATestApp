@@ -1,13 +1,9 @@
 ﻿using BCATestApp.Model;
 using BCATestApp.Repositorys;
 using BCATestApp.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace BCATestApp.ViewModel
 {
@@ -15,8 +11,27 @@ namespace BCATestApp.ViewModel
     {
         public ObservableCollection<Car> Cars { get; } = new();
         public ObservableCollection<string> CarBrands { get; } = new();
+        public ObservableCollection<string> CarModels { get; } = new();
+
         private readonly CarsRepository _carRepository;
+
         private string _selectedCarBrand = "";
+        private string _selectedCarModel = "";
+        private bool _isBrandSelected;
+        private bool _isBrandChanged;
+
+        public CarsViewModel(CarsRepository carsRepository)
+        {
+            Title = "Car Finder";
+            _carRepository = carsRepository ?? throw new ArgumentNullException(nameof(carsRepository), "CarsRepository cannot be null");
+            Task.Run(async () =>
+            {
+                await GetAllCarBrandsAsync();
+                await GetAllCars();
+            });
+        }
+
+
         public string SelectedCarBrand
         {
             get => _selectedCarBrand;
@@ -25,112 +40,130 @@ namespace BCATestApp.ViewModel
                 if (_selectedCarBrand != value)
                 {
                     _selectedCarBrand = value;
-                    OnPropertyChanged(); 
-                    if(_selectedCarBrand == "All Brands")
-                    {
-                        Task.Run(async () => await GetAllCars());
-                    }
-                    else Task.Run(async () => await GetCarsFilteredByMakeAsync(value));
+                    OnPropertyChanged();
+                    _isBrandChanged = true;
+                    ApplyFilters();
                 }
             }
         }
 
-        public CarsViewModel(CarsRepository carsRepository)
+        public string SelectedCarModel
         {
-            Title = "Car Finder";
-            _carRepository = carsRepository ?? throw new ArgumentNullException(nameof(carsRepository), "CarsRepository cannot be null");
-            Task.Run(async () =>
+            get => _selectedCarModel;
+            set
             {
-                await GetAllCarBrands();
-                await GetAllCars();
-            });
+                if (_selectedCarModel != value)
+                {
+                    _selectedCarModel = value;
+                    OnPropertyChanged();
+                    ApplyFilters();
+                }
+            }
         }
 
-        async Task GetCarsFilteredByMakeAsync(String make)
+        public bool IsBrandSelected
         {
-            if (IsBusy)
-                return;
+            get => _isBrandSelected;
+            set
+            {
+                if (_isBrandSelected != value)
+                {
+                    _isBrandSelected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private async void ApplyFilters()
+        {
             try
             {
-                IsBusy = true;
+                var filteredCars = await _carRepository.GetAllCarsCachedAsync();
+
+                if (_isBrandChanged && !string.IsNullOrWhiteSpace(SelectedCarBrand) && SelectedCarBrand != "All Brands")
+                {
+                    filteredCars = filteredCars.Where(car => car.Make == SelectedCarBrand).ToList();
+                    IsBrandSelected = true;
+                    await GetAllCarModelsAsync();
+                    _isBrandChanged = false;
+;
+                }
+                else if (SelectedCarBrand == "All Brands")
+                {
+                    filteredCars = await _carRepository.GetAllCarsCachedAsync();
+                    IsBrandSelected = false;
+                    SelectedCarModel = "All Models";
+                }
+                else
+                {
+                    filteredCars = filteredCars.ToList();
+                }
+
+                if (!string.IsNullOrWhiteSpace(SelectedCarModel) && SelectedCarModel != "All Models")
+                {
+                    filteredCars = filteredCars.Where(car => car.Model == SelectedCarModel).ToList();
+                }
+
+                else if (SelectedCarBrand != "All Brands")
+                {
+                    filteredCars = filteredCars.Where(car => car.Make == SelectedCarBrand).ToList();
+                }
 
                 Cars.Clear();
-
-                var cars = await _carRepository.GetCarsFilteredByBrandAsync(make);
-
-                foreach (var car in cars)
-                {
-                    Cars.Add(car);
-                }
+                AddItemsToCollection(Cars, filteredCars);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unable to load car brands: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
+                Console.WriteLine($"Error applying filters: {ex.Message}");
             }
         }
 
-        async Task GetAllCarBrands()
+
+        private async Task GetAllCarBrandsAsync()
         {
-            if (IsBusy)
-                return;
-
-            try
+            await ExecuteWithBusyCheck(async () =>
             {
-                IsBusy = true;
-
                 CarBrands.Clear();
 
                 var brands = await _carRepository.GetBrandsListAsync();
 
-                foreach (var brand in brands)
-                {
-                    CarBrands.Add(brand);
-                }
+                AddItemsToCollection(CarBrands, brands);
                 CarBrands.Insert(0, "All Brands");
-                SelectedCarBrand = "All Brands";
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Unable to load car brands: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+
+                SelectedCarBrand = "All Brands"; 
+            });
         }
 
-        async Task GetAllCars()
+        private async Task GetAllCarModelsAsync()
         {
-            if (IsBusy)
-                return;
-
-            try
+            await ExecuteWithBusyCheck(async () =>
             {
-                IsBusy = true;
 
-                var cars = await _carRepository.GetAllCarsCachedAsync();
+                CarModels.Clear();
 
-                if (Cars.Count != 0)
-                    Cars.Clear();
+                try
+                {
+                    var models = await _carRepository.GetModelsPerBrandListAsync(SelectedCarBrand);
+                    AddItemsToCollection(CarModels, models);
 
-                foreach (var car in cars) {
-                    Cars.Add(car);
+                    CarModels.Insert(0, "All Models");
+                    SelectedCarModel = "All Models";
                 }
-            }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error fetching models for brand {SelectedCarBrand}: {ex.Message}");
+                }
+            });
+        }
 
-            catch (Exception)
+        private async Task GetAllCars()
+        {
+            await ExecuteWithBusyCheck(async () =>
             {
-                Debug.WriteLine($"Unable to get Cars");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+                Cars.Clear();
+                var allCars = await _carRepository.GetAllCarsCachedAsync();
+                AddItemsToCollection(Cars, allCars);
+            });
         }
     }
 }

@@ -36,7 +36,20 @@ namespace BCATestApp.Repositorys
         public async Task<List<string>> GetBrandsListAsync()
         {
             var carList = await GetAllCarsCachedAsync();
+            Console.WriteLine(carList);
             return carList.Select(car => car.Make).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        public async Task<List<string>> GetModelsPerBrandListAsync(String make)
+        {
+            var carList = await GetAllCarsCachedAsync();
+            var filteredModels = carList
+                .Where(car => car.Make.Equals(make, StringComparison.OrdinalIgnoreCase)) 
+                .Select(car => car.Model) 
+                .Distinct() 
+                .ToList(); 
+
+            return filteredModels;
         }
     }
 }

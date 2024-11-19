@@ -3,6 +3,7 @@ using BCATestApp.Services;
 
 using BCATestApp.ViewModel;
 using BCATestApp.Repositorys;
+using BCATestApp.Model;
 
 namespace BCATestApp
 {
@@ -26,7 +27,7 @@ namespace BCATestApp
 
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

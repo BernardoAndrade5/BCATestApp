@@ -10,7 +10,7 @@ namespace BCATestApp.Services
 {
     public class CarService
     {
-        List<Car> carList = new();
+        List<Car> carList = [];
 
         public List<Car>? GetCarList()
         {
