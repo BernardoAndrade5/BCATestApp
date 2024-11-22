@@ -1,4 +1,5 @@
-﻿using BCATestApp.ViewModel;
+﻿using BCATestApp.View;
+using BCATestApp.ViewModel;
 
 namespace BCATestApp
 {
@@ -10,5 +11,4 @@ namespace BCATestApp
             BindingContext = carsViewModel;
         }
     }
-
 }

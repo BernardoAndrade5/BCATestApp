@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:BCATestApp.Model"
+             xmlns:viewmodel="clr-namespace:BCATestApp.ViewModel"
+             x:DataType="viewmodel:CarsViewModel"
+             Title="CarCollectionView"
+             x:Class="BCATestApp.View.CarCollectionView">
+    <Grid
+    RowDefinitions="Auto, Auto, *"
+    ColumnDefinitions="*, *, *"
+    RowSpacing="10"
+    Padding="10">
+        <CollectionView 
+        ItemsSource="{Binding Cars}"
+        SelectionMode="None"
+        Grid.Row="2"
+        Grid.ColumnSpan="3"
+        Margin="0,10,0,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:Car">
+                    <Border
+                    Margin="5"
+                    Padding="10"
+                    BackgroundColor="LightGray">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackLayout>
+                                <Label 
+                                Text="{Binding Make}" 
+                                FontSize="Medium"
+                                FontAttributes="Bold"
+                                TextColor="DarkBlue"/>
+                                <Label 
+                                Text="{Binding Model}" 
+                                FontSize="Small"
+                                TextColor="Black"/>
+                            </StackLayout>
+                            <StackLayout HorizontalOptions="End">
+                                <Label 
+                                Text="{Binding AuctionDateTime}" 
+                                FontSize="Medium"
+                                FontAttributes="Bold"
+                                TextColor="DarkBlue"/>
+                                <Label 
+                                FontSize="Small"
+                                HorizontalTextAlignment="End"
+                                TextColor="Black">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="Starting bid : " />
+                                            <Span Text="{Binding StartingBid}" />
+                                            <Span Text="€" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
