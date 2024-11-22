@@ -63,5 +63,24 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        <StackLayout
+            Orientation="Horizontal"
+            HorizontalOptions="Center">
+            <Button
+                Text="&lt;"
+                IsEnabled="{Binding IsPagedownButtonEnable}"
+                Margin="10"
+                Command="{Binding CollectionViewPageDownCommand}"/>
+            <Label
+                Text="{Binding CurrentPageText}"
+                VerticalTextAlignment="Center"
+                FontSize="20"
+                Margin="10"
+                />
+            <Button
+                Text=">"
+                Margin="10"
+                Command="{Binding CollectionViewPageUpCommand}"/>
+        </StackLayout>
     </Grid>
 </ContentPage>

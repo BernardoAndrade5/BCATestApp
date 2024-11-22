@@ -5,6 +5,7 @@ using BCATestApp.View;
 using CommunityToolkit.Maui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Windows.Input;
 
 namespace BCATestApp.ViewModel
@@ -18,6 +19,9 @@ namespace BCATestApp.ViewModel
         public Command ApplyFiltersCommand { get; }
         public Command NavigateToPageCommand{ get; }
         public Command PopCurrentPageCommand { get; }
+        public Command CollectionViewPageUpCommand { get; }
+        public Command CollectionViewPageDownCommand { get; }
+
 
         private readonly CarsRepository _carRepository;
         private readonly NavigationService _navigationService;
@@ -28,6 +32,10 @@ namespace BCATestApp.ViewModel
         private int _maxStartingBid = 50000;
         private bool _isBrandSelected;
         private bool _isBrandChanged;
+        private int PageSize = 20;
+        private bool _isCollecitonViewButtonDownEnable  = false;
+        public int _currentPage = 1;
+        public int _maxPages = 0;
 
         public CarsViewModel(CarsRepository carsRepository, NavigationService navigationService)
         {
@@ -47,7 +55,11 @@ namespace BCATestApp.ViewModel
                     ApplyFilters();
                     await NavigateToPageAsync(page);
                 });
+            CollectionViewPageUpCommand = new Command(HandleCollectionViewPageUp);
+            CollectionViewPageDownCommand = new Command(HandleCollectionViewPageDown);
         }
+
+        public string CurrentPageText => $"Page {CurrentPage} of {MaxPage}";
 
         public int MinStartingBid
         {
@@ -125,6 +137,68 @@ namespace BCATestApp.ViewModel
             }
         }
 
+        public bool IsPagedownButtonEnable
+        {
+            get => _isCollecitonViewButtonDownEnable;
+            set
+            {
+                if (_isCollecitonViewButtonDownEnable != value)
+                {
+                    _isCollecitonViewButtonDownEnable = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int MaxPage
+        {
+            get => _maxPages;
+            set
+            {
+                if (_maxPages != value)
+                {
+                    _maxPages = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                if (_currentPage != value)
+                {
+                    _currentPage = Math.Max(1, Math.Min(value, MaxPage));
+
+                    IsPagedownButtonEnable = _currentPage > 1;
+                    OnPropertyChanged();
+                    ApplyFilters();
+                    OnPropertyChanged(nameof(CurrentPageText));
+                }
+            }
+        }
+
+        private void HandleCollectionViewPageUp() {
+            if (CurrentPage < MaxPage)
+                CurrentPage++;
+        }
+
+        private void HandleCollectionViewPageDown()
+        {
+            if (CurrentPage > 1)
+                CurrentPage--;
+        }
+
+        private void GetMaxPageNumber(List<Car> filteredCars)
+        {
+            // Calculate total pages based on filteredCars.Count and PageSize
+            MaxPage = (int)Math.Ceiling((double)filteredCars.Count / PageSize);
+
+            CurrentPage = Math.Min(CurrentPage, MaxPage);
+        }
+
         private async void ApplyFilters()
         {
             try
@@ -165,8 +239,12 @@ namespace BCATestApp.ViewModel
                     Debug.WriteLine("Filtered List is Empty");
                 }
 
+                GetMaxPageNumber(filteredCars);
+
+                var currentPage = CurrentPage - 1;
+
+                filteredCars = filteredCars.Skip(PageSize * currentPage).Take(PageSize).ToList();
                 Cars.Clear();
-                filteredCars.Slice(20);
                 AddItemsToCollection(Cars, filteredCars);
 
             }
