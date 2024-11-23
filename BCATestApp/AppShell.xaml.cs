@@ -9,6 +9,7 @@ namespace BCATestApp
             InitializeComponent();
 
             Routing.RegisterRoute(nameof(CarCollectionView), typeof(CarCollectionView));
+            Routing.RegisterRoute(nameof(CarDetailView), typeof(CarDetailView));
         }
     }
 }

@@ -70,10 +70,16 @@
 	  <Compile Update="View\CarCollectionView.xaml.cs">
 	    <DependentUpon>CarCollectionView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="View\CarDetailView.xaml.cs">
+	    <DependentUpon>CarDetailView.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="View\CarCollectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\CarDetailView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

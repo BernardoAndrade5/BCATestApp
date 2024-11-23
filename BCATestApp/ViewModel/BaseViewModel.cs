@@ -14,7 +14,7 @@ namespace BCATestApp.ViewModel
     public class BaseViewModel : INotifyPropertyChanged
     {
         bool isBusy;
-        string? title;
+        bool _isLoading;
 
         public bool IsBusy
         {
@@ -27,15 +27,14 @@ namespace BCATestApp.ViewModel
             }
         }
 
-        public string Title
+        public bool IsLoading
         {
-            get => title;
-
+            get => _isLoading;
             set
             {
-                if (title == value)
+                if (_isLoading == value)
                     return;
-                title = value;
+                _isLoading = value;
                 OnPropertyChanged();
             }
         }
