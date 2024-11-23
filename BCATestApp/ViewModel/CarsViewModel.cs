@@ -239,9 +239,12 @@ namespace BCATestApp.ViewModel
                     Debug.WriteLine("Filtered List is Empty");
                 }
 
+
                 GetMaxPageNumber(filteredCars);
 
                 var currentPage = CurrentPage - 1;
+
+                filteredCars.Sort((x, y) => x.StartingBid.CompareTo(y.StartingBid));
 
                 filteredCars = filteredCars.Skip(PageSize * currentPage).Take(PageSize).ToList();
                 Cars.Clear();

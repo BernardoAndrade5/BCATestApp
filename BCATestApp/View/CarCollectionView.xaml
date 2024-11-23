@@ -65,7 +65,9 @@
         </CollectionView>
         <StackLayout
             Orientation="Horizontal"
-            HorizontalOptions="Center">
+            HorizontalOptions="Center"
+            Grid.ColumnSpan="3"
+            BackgroundColor="LimeGreen">
             <Button
                 Text="&lt;"
                 IsEnabled="{Binding IsPagedownButtonEnable}"
