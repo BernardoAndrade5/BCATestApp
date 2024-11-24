@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:BCATestApp.Model"
+             xmlns:viewmodel="clr-namespace:BCATestApp.ViewModel"
+             xmlns:local="clr-namespace:BCATestApp.Services"
+             x:DataType="viewmodel:CarsViewModel"
+             Title="CarCollectionView"
+             x:Class="BCATestApp.View.CarCollectionView"
+             BackgroundColor="#e6e8eb">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:ImageConverterService x:Key="ImageConverterService"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid
+    RowDefinitions="Auto, *, Auto"
+    ColumnDefinitions="*, *, *"
+    RowSpacing="10"
+    Margin="0, 0, 0, 20"
+    Padding="10">
+        <ActivityIndicator
+            IsRunning="{Binding IsLoading}"
+            IsVisible="{Binding IsLoading}"
+            Color="Blue"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"/>
+        <CollectionView 
+        ItemsSource="{Binding Cars}"
+        SelectionMode="None"
+        Grid.Row="1"
+        Grid.ColumnSpan="3"
+        Margin="0,10,0,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:Car">
+                    <Border
+                    Margin="5"
+                    Padding="10"
+                    StrokeThickness="4"
+                    Stroke="#517dc4"
+                    BackgroundColor="White">
+                        <StackLayout
+                            Orientation="Vertical">
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:CarsViewModel}}, Path=NavigateToDetailPageCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </StackLayout.GestureRecognizers>
+                            <Image Source="car_placeholder_img.png"/>
+                            <Label 
+                                    HorizontalTextAlignment="Start"
+                                    VerticalOptions="Center"
+                                    TextColor="Black">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Make}" FontSize="Title" FontAttributes="Bold" />
+                                            <Span Text=" " />
+                                            <Span Text="{Binding Model}" FontSize="Title" FontAttributes="Bold" />
+                                            <Span Text=" " />
+                                            <Span Text="{Binding EngineSize}" FontSize="Title" FontAttributes="Bold" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label 
+                                FontSize="Small"
+                                HorizontalTextAlignment="Start"
+                                TextColor="Black">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Fuel}" />
+                                            <Span Text=" &#8226; " />
+                                            <Span Text="{Binding Year}" />
+                                            <Span Text=" &#8226; " />
+                                            <Span Text="{Binding Mileage}" />
+                                            <Span Text=" km " />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <StackLayout HorizontalOptions="FillAndExpand" Margin="0,10,0,0">
+                                <Grid>
+                                    <Label 
+                                    FontSize="Medium"
+                                    HorizontalTextAlignment="Start"
+                                    FontAttributes="Bold"
+                                    TextColor="Black"
+                                    Text="{Binding AuctionDateTime}"/>
+                                        <ImageButton
+                                        HorizontalOptions="End" 
+                                        VerticalOptions="Center" 
+                                        WidthRequest="25" 
+                                        HeightRequest="25"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:CarsViewModel}}, Path=ToggleFavouriteCommand}"
+                                        Source="{Binding Favourite, Converter={StaticResource ImageConverterService}}"
+                                        BackgroundColor="Transparent"/>
+                                </Grid>
+                                <BoxView
+                                HeightRequest="2"
+                                BackgroundColor="#517dc4"
+                                Margin="0,5,0,5"
+                                HorizontalOptions="FillAndExpand" />
+                                <Label 
+                                    FontSize="Medium"
+                                    HorizontalTextAlignment="Start"
+                                    VerticalOptions="Center"
+                                    TextColor="Black">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding StartingBid}" />
+                                            <Span Text="€" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                        </StackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <StackLayout
+            Grid.Row="0"
+            HorizontalOptions="FillAndExpand"
+            Grid.ColumnSpan="3"
+            Orientation="Horizontal">
+            <Button
+                Text="Filters"
+                Margin="10"
+                BackgroundColor="#517dc4"
+                HorizontalOptions="FillAndExpand"
+                TextColor="White"
+                Command="{Binding PopCurrentPageCommand}"
+                />
+            <Picker
+                Title="Sort by :"
+                HorizontalTextAlignment="Center"
+                Margin="10"
+                BackgroundColor="Transparent"
+                HorizontalOptions="FillAndExpand"
+                TextColor="Black"
+                ItemsSource="{Binding SortingOptions}"
+                SelectedItem="{Binding SortingOptionSelected}"
+                />
+            <Picker
+                Title="Cars Per Page"
+                Margin="10"
+                HorizontalTextAlignment="Center"
+                BackgroundColor="Transparent"
+                HorizontalOptions="FillAndExpand"
+                TextColor="Black"
+                ItemsSource="{Binding PageSizeOptions}"
+                SelectedItem="{Binding PageSizeSelected}"
+                />
+        </StackLayout>
+        <StackLayout
+            Orientation="Horizontal"
+            HorizontalOptions="Center"
+            Grid.Row="2"
+            Grid.ColumnSpan="3">
+            <Button
+                Text="&lt;"
+                BackgroundColor="#517dc4"
+                TextColor="White"
+                IsEnabled="{Binding IsPagedownButtonEnable}"
+                Margin="10"
+                Command="{Binding CollectionViewPageDownCommand}"/>
+            <Label
+                Text="{Binding CurrentPageText}"
+                VerticalTextAlignment="Center"
+                FontSize="20"
+                Margin="10"
+                />
+            <Button
+                Text=">"
+                BackgroundColor="#517dc4"
+                Margin="10"
+                Command="{Binding CollectionViewPageUpCommand}"/>
+        </StackLayout>
+    </Grid>
+</ContentPage>

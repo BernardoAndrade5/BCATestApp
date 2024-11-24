@@ -1,13 +1,12 @@
 ﻿using BCATestApp.Model;
 using BCATestApp.Repositorys;
 using BCATestApp.Services;
-using System;
-using System.Collections.Generic;
+using BCATestApp.View;
+using CommunityToolkit.Maui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
+using System.Windows.Input;
 
 namespace BCATestApp.ViewModel
 {
@@ -15,8 +14,124 @@ namespace BCATestApp.ViewModel
     {
         public ObservableCollection<Car> Cars { get; } = new();
         public ObservableCollection<string> CarBrands { get; } = new();
+        public ObservableCollection<string> CarModels { get; } = new();
+        public ObservableCollection<string> SortingOptions {get; } = new();
+        public ObservableCollection<int> PageSizeOptions { get; } = new();
+        public Command ApplyFiltersCommand { get; }
+        public Command NavigateToPageCommand{ get; }
+        public Command PopCurrentPageCommand { get; }
+        public Command CollectionViewPageUpCommand { get; }
+        public Command CollectionViewPageDownCommand { get; }
+        public Command NavigateToDetailPageCommand { get; }
+        public Command ToggleFavouriteCommand { get; }
+
         private readonly CarsRepository _carRepository;
+        private readonly NavigationService _navigationService;
+
         private string _selectedCarBrand = "";
+        private string _selectedCarModel = "";
+        private int _minStartingBid = 0;
+        private int _maxStartingBid = 50000;
+        private bool _isBrandSelected;
+        private bool _isBrandChanged;
+        private int _pageSizeSelected = 20;
+        private bool _isCollecitonViewButtonDownEnable  = false;
+        public int _currentPage = 1;
+        public int _maxPages = 0;
+        public string _sortingOptionSelected = "";
+        private Car _selectedCar;
+        private bool _onlyFavourites;
+
+        public CarsViewModel(CarsRepository carsRepository, NavigationService navigationService)
+        {
+            _carRepository = carsRepository;
+            _navigationService = navigationService;
+            Cars.Clear();
+            Task.Run(async () => await GetAllCarBrandsAsync());
+            SortingOptionsHandler();
+            PageSizeOptionsHandler();
+            ApplyFiltersCommand = new Command(async () => await ApplyFilters());
+            NavigateToPageCommand = new Command<string>(async (page) => await NavigateToPageAsync(page));
+            PopCurrentPageCommand = new Command(async () => await PopCurrentPageAsync());
+            CollectionViewPageUpCommand = new Command(HandleCollectionViewPageUp);
+            CollectionViewPageDownCommand = new Command(HandleCollectionViewPageDown);
+            NavigateToDetailPageCommand = new Command<Car>(async (selectedCar) => await HandleSelectedCarAsync(selectedCar));
+            ToggleFavouriteCommand = new Command(ToggleFavourite);  
+        }
+
+
+
+        public string CurrentPageText => $"Page {CurrentPage} of {MaxPage}";
+
+        public Car SelectedCar
+        {
+            get => _selectedCar;
+            set
+            {
+                if (_selectedCar != value)
+                {
+                    _selectedCar = value;
+                    Debug.WriteLine(SelectedCar);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string SortingOptionSelected
+        {
+            get => _sortingOptionSelected;
+            set
+            {
+                if(_sortingOptionSelected != value)
+                {
+                    _sortingOptionSelected = value;
+                    OnPropertyChanged();
+                    UpdateFiltersForPageAsync();
+                }
+            }
+        }
+
+        public int PageSizeSelected
+        {
+            get => _pageSizeSelected;
+            set
+            {
+                if (_pageSizeSelected != value)
+                {
+                    _pageSizeSelected = value;
+                    OnPropertyChanged();
+                    UpdateFiltersForPageAsync();
+                }
+            }
+        }
+
+        public int MinStartingBid
+        {
+            get => _minStartingBid;
+            set
+            {
+                if(_minStartingBid != value)
+                {
+                    _minStartingBid = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int MaxStartingBid
+        {
+            get => _maxStartingBid;
+            set
+            {
+                if (_maxStartingBid != value)
+                {
+                    _maxStartingBid = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
         public string SelectedCarBrand
         {
             get => _selectedCarBrand;
@@ -25,112 +140,297 @@ namespace BCATestApp.ViewModel
                 if (_selectedCarBrand != value)
                 {
                     _selectedCarBrand = value;
-                    OnPropertyChanged(); 
-                    if(_selectedCarBrand == "All Brands")
+                    OnPropertyChanged();
+                    if (SelectedCarBrand == "All Brands")
                     {
-                        Task.Run(async () => await GetAllCars());
+                        IsBrandSelected = false;
+                        SelectedCarModel = "All Models"; 
                     }
-                    else Task.Run(async () => await GetCarsFilteredByMakeAsync(value));
+                    else
+                    {
+                        IsBrandSelected = true;
+                        _isBrandChanged = true;
+                        _ = GetAllCarModelsAsync(); 
+                    }
+                }
+            }
+        }
+        public string SelectedCarModel
+        {
+            get => _selectedCarModel;
+            set
+            {
+                if (_selectedCarModel != value)
+                {
+                    _selectedCarModel = value;
+                    OnPropertyChanged();
                 }
             }
         }
 
-        public CarsViewModel(CarsRepository carsRepository)
+        public bool IsBrandSelected
         {
-            Title = "Car Finder";
-            _carRepository = carsRepository ?? throw new ArgumentNullException(nameof(carsRepository), "CarsRepository cannot be null");
-            Task.Run(async () =>
+            get => _isBrandSelected;
+            set
             {
-                await GetAllCarBrands();
-                await GetAllCars();
-            });
+                if (_isBrandSelected != value)
+                {
+                    _isBrandSelected = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        async Task GetCarsFilteredByMakeAsync(String make)
+        public bool IsPagedownButtonEnable
         {
-            if (IsBusy)
-                return;
+            get => _isCollecitonViewButtonDownEnable;
+            set
+            {
+                if (_isCollecitonViewButtonDownEnable != value)
+                {
+                    _isCollecitonViewButtonDownEnable = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        public int MaxPage
+        {
+            get => _maxPages;
+            set
+            {
+                if (_maxPages != value)
+                {
+                    _maxPages = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CurrentPageText));
+                }
+            }
+        }
+
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                if (_currentPage != value)
+                {
+                    _currentPage = Math.Max(1, Math.Min(value, MaxPage));
+
+                    IsPagedownButtonEnable = _currentPage > 1;
+                    Debug.WriteLine(IsPagedownButtonEnable);
+                    OnPropertyChanged();
+                    UpdateFiltersForPageAsync();
+                    OnPropertyChanged(nameof(CurrentPageText));
+                }
+            }
+        }
+
+        public bool OnlyFavourites
+        {
+            get => _onlyFavourites;
+            set
+            {
+                if(_onlyFavourites != value)
+                {
+                    _onlyFavourites = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
+        private void ToggleFavourite()
+        {
+            SelectedCar.Favourite = !SelectedCar.Favourite;
+            Debug.WriteLine(SelectedCar.Favourite);
+            OnPropertyChanged(nameof(SelectedCar));
+        }
+
+        private async Task HandleSelectedCarAsync(Car selectedCar)
+        {
+            if (selectedCar != null)
+            {
+                SelectedCar = selectedCar;
+                await _navigationService.NavigateToAsync("CarDetailView");
+            }
+        }
+
+        private void SortingOptionsHandler()
+        {
+            SortingOptions.Add("StartingBid");
+            SortingOptions.Add("Make");
+            SortingOptions.Add("Milage");
+            SortingOptions.Add("AuctionDate");
+        }
+
+        private void PageSizeOptionsHandler()
+        {
+            PageSizeOptions.Add(20);
+            PageSizeOptions.Add(40);
+            PageSizeOptions.Add(60);
+            PageSizeOptions.Add(80);
+        }
+
+        private IEnumerable<Car> SortCars (IEnumerable<Car> cars)
+        {
+            switch (SortingOptionSelected)
+            {
+                case "StartingBid":
+                    return cars.OrderBy(car => car.StartingBid);
+
+                case "Make":
+                    return cars.OrderBy(car => car.Make);
+
+                case "Milage":
+                    return cars.OrderBy(car => car.Mileage);  
+
+                case "AuctionDate":
+                    return cars.OrderBy(car => car.AuctionDateTime);  
+
+                default:
+                    return cars.OrderBy(car => car.StartingBid);  
+            }
+        }
+
+        private void HandleCollectionViewPageUp() {
+            if (CurrentPage < MaxPage)
+                CurrentPage++;
+        }
+
+        private void HandleCollectionViewPageDown()
+        {
+            if (CurrentPage > 1)
+                CurrentPage--;
+        }
+
+        private void GetMaxPageNumber(int carsCount)
+        {
+            MaxPage = (int)Math.Ceiling((double)carsCount / PageSizeSelected);
+
+            CurrentPage = Math.Min(CurrentPage, MaxPage);
+        }
+
+        private async void UpdateFiltersForPageAsync()
+        {
+            await ApplyFilters();
+        }
+
+        public async Task ApplyFilters()
+        {
+            IsLoading = true;
             try
             {
-                IsBusy = true;
-
                 Cars.Clear();
+                var allCars = await Task.Run(() => _carRepository.GetAllCarsCachedAsync()); 
+                var filteredCars = allCars.AsEnumerable();
 
-                var cars = await _carRepository.GetCarsFilteredByBrandAsync(make);
-
-                foreach (var car in cars)
+                if (OnlyFavourites)
                 {
-                    Cars.Add(car);
+                    filteredCars = filteredCars.Where(car => car.Favourite);
                 }
+                if (_isBrandChanged && !string.IsNullOrWhiteSpace(SelectedCarBrand) && SelectedCarBrand != "All Brands")
+                {
+                    filteredCars = filteredCars.Where(car => car.Make == SelectedCarBrand);
+;
+                }
+                if (!string.IsNullOrWhiteSpace(SelectedCarModel) && SelectedCarModel != "All Models")
+                {
+                    filteredCars = filteredCars.Where(car => car.Model == SelectedCarModel);
+                }
+                if(MinStartingBid > 0.0 && MaxStartingBid < 50000)
+                {
+                    filteredCars = filteredCars.Where(car => car.StartingBid >= MinStartingBid && car.StartingBid <= MaxStartingBid);
+                }
+
+
+                filteredCars = SortCars(filteredCars);
+
+                var currentPage = CurrentPage - 1;
+
+                GetMaxPageNumber(filteredCars.Count());
+
+                filteredCars = filteredCars
+                    .Skip(PageSizeSelected * currentPage)
+                    .Take(PageSizeSelected)
+                    .ToList();
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        AddItemsToCollection(Cars, filteredCars);
+                    });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unable to load car brands: {ex.Message}");
+                Console.WriteLine($"Error applying filters: {ex.Message}");
             }
             finally
             {
-                IsBusy = false;
+                IsLoading = false;
             }
         }
 
-        async Task GetAllCarBrands()
+
+        private async Task GetAllCarBrandsAsync()
         {
-            if (IsBusy)
-                return;
-
-            try
+            await ExecuteWithBusyCheck(async () =>
             {
-                IsBusy = true;
-
                 CarBrands.Clear();
 
                 var brands = await _carRepository.GetBrandsListAsync();
 
-                foreach (var brand in brands)
+                if (brands.Count <= 3)
                 {
-                    CarBrands.Add(brand);
+                    await GetAllCarBrandsAsync();
                 }
+
+                AddItemsToCollection(CarBrands, brands);
                 CarBrands.Insert(0, "All Brands");
-                SelectedCarBrand = "All Brands";
-            }
-            catch (Exception ex)
+
+                SelectedCarBrand = "All Brands"; 
+            });
+        }
+
+        private async Task GetAllCarModelsAsync()
+        {
+            await ExecuteWithBusyCheck(async () =>
             {
-                Debug.WriteLine($"Unable to load car brands: {ex.Message}");
-            }
-            finally
+
+                CarModels.Clear();
+
+                try
+                {
+                    var models = await _carRepository.GetModelsPerBrandListAsync(SelectedCarBrand);
+                    AddItemsToCollection(CarModels, models);
+
+                    CarModels.Insert(0, "All Models");
+                    SelectedCarModel = "All Models";
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error fetching models for brand {SelectedCarBrand}: {ex.Message}");
+                }
+            });
+        }
+
+        private async Task NavigateToPageAsync(String page)
+        {
+            if(page == "CarCollectionView")
             {
-                IsBusy = false;
+                CurrentPage = 1;
+                Cars.Clear();
+                await _navigationService.NavigateToAsync(page);
+                await ApplyFilters();
+            }
+            else
+            {
+                await _navigationService.NavigateToAsync(page);
             }
         }
 
-        async Task GetAllCars()
+        private async Task PopCurrentPageAsync()
         {
-            if (IsBusy)
-                return;
-
-            try
-            {
-                IsBusy = true;
-
-                var cars = await _carRepository.GetAllCarsCachedAsync();
-
-                if (Cars.Count != 0)
-                    Cars.Clear();
-
-                foreach (var car in cars) {
-                    Cars.Add(car);
-                }
-            }
-
-            catch (Exception)
-            {
-                Debug.WriteLine($"Unable to get Cars");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            await _navigationService.PopAsync();
         }
     }
 }

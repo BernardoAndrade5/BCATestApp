@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BCATestApp.View.CarDetailView"
+             xmlns:viewmodel="clr-namespace:BCATestApp.ViewModel"
+             xmlns:local="clr-namespace:BCATestApp.Services"
+             x:DataType="viewmodel:CarsViewModel"
+             Title="Car Details"
+             BackgroundColor="#e6e8eb">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:ImageConverterService x:Key="ImageConverterService"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
+    <ScrollView
+        Margin="0, 0, 0, 20">
+        <VerticalStackLayout
+        HorizontalOptions="CenterAndExpand">
+            <Image Source="car_placeholder_img.png"/>
+
+            <Grid
+                HorizontalOptions="Fill"
+                Margin="20">
+                <VerticalStackLayout>
+                    <Grid>
+                        <Label 
+                        HorizontalTextAlignment="Start"
+                        VerticalOptions="Center"
+                        TextColor="Black">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding SelectedCar.Make}" FontSize="Title" FontAttributes="Bold" />
+                                    <Span Text=" " />
+                                    <Span Text="{Binding SelectedCar.Model}" FontSize="Title" FontAttributes="Bold" />
+                                    <Span Text=" " />
+                                    <Span Text="{Binding SelectedCar.EngineSize}" FontSize="Title" FontAttributes="Bold" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <ImageButton 
+                            HorizontalOptions="End" 
+                            VerticalOptions="Center" 
+                            WidthRequest="30" 
+                            HeightRequest="30"
+                            Command="{Binding ToggleFavouriteCommand}"
+                            Source="{Binding SelectedCar.Favourite, Converter={StaticResource ImageConverterService}}"
+                            BackgroundColor="Transparent"/>
+                    </Grid>
+                    <HorizontalStackLayout>
+                        <Label 
+                            FontSize="Medium"
+                            HorizontalTextAlignment="Start"
+                            FontAttributes="Bold"
+                            TextColor="Black">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding SelectedCar.Fuel}" />
+                                    <Span Text=" &#8226; " />
+                                    <Span Text="{Binding SelectedCar.Mileage}" />
+                                    <Span Text=" km " />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout>
+                        <Label 
+                            Margin="0, 10, 0, 0"
+                            HorizontalTextAlignment="Start"
+                            TextColor="Black">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding SelectedCar.StartingBid}" FontSize="Medium" FontAttributes="Bold"/>
+                                    <Span Text=" € " FontSize="Medium" FontAttributes="Bold"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </HorizontalStackLayout>
+                    <BoxView
+                        HeightRequest="2"
+                        BackgroundColor="#517dc4"
+                        Margin="0,20,0,20"
+                        HorizontalOptions="FillAndExpand" />
+                    <Label 
+                        Text="Details"
+                        FontSize="Large"
+                        FontAttributes="Bold"/>
+                    <Grid
+                        Margin="0,20,0,0">
+                        <Label
+                            Text="Make"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Make}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Model"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Model}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Engine Size"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.EngineSize}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Fuel"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Fuel}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Year"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Year}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Mileage"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Mileage}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Vehicle type"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.VehicleType}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Color"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.Colour}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Transmission"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.Transmission}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Number of doors"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.NumberOfDoors}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="CO2 Emissions"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.CO2Emissions}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Nox Emissions"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.NoxEmissions}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Number of keys"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Specification.NumberOfKeys}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="LogBook"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Ownership.LogBook}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                    <Grid
+                        Margin="0,10,0,0">
+                        <Label
+                            Text="Number of Owners"
+                            FontSize="Medium"
+                            HorizontalOptions="Start"/>
+
+                        <Label
+                            Text="{Binding SelectedCar.Details.Ownership.NumberOfOwners}"
+                            FontSize="Medium"
+                            TextColor="#517dc4"
+                            HorizontalOptions="End"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

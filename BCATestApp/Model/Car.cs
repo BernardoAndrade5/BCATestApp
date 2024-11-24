@@ -17,7 +17,7 @@ namespace BCATestApp.Model
             public required string AuctionDateTime { get; set; }
             public int StartingBid { get; set; }
             public bool Favourite { get; set; }
-            public required Detail Details { get; set; }
+            public Detail? Details { get; set; }
 
         public class Detail
         {

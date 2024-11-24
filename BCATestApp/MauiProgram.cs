@@ -3,6 +3,7 @@ using BCATestApp.Services;
 
 using BCATestApp.ViewModel;
 using BCATestApp.Repositorys;
+using CommunityToolkit.Maui;
 
 namespace BCATestApp
 {
@@ -13,6 +14,7 @@ namespace BCATestApp
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -21,12 +23,13 @@ namespace BCATestApp
 
             builder.Services.AddTransient<MainPage>();
             builder.Services.AddSingleton<CarService>();
-            builder.Services.AddTransient<CarsViewModel>();
+            builder.Services.AddSingleton<NavigationService>();
+            builder.Services.AddSingleton<CarsViewModel>();
             builder.Services.AddTransient<CarsRepository>();
 
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
