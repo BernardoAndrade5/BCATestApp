@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCATestApp", "BCATestApp\BCATestApp.csproj", "{16558588-4426-4926-A063-32F3C92FC91A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCAAppTests", "BCAAppTests\BCAAppTests.csproj", "{6091E6E1-2E6F-4172-AF84-30F0FC471368}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{16558588-4426-4926-A063-32F3C92FC91A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16558588-4426-4926-A063-32F3C92FC91A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16558588-4426-4926-A063-32F3C92FC91A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6091E6E1-2E6F-4172-AF84-30F0FC471368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6091E6E1-2E6F-4172-AF84-30F0FC471368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6091E6E1-2E6F-4172-AF84-30F0FC471368}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6091E6E1-2E6F-4172-AF84-30F0FC471368}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
