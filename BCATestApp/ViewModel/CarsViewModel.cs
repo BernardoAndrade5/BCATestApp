@@ -44,7 +44,7 @@ namespace BCATestApp.ViewModel
 
         public CarsViewModel(CarsRepository carsRepository, NavigationService navigationService)
         {
-            _carRepository = carsRepository ?? throw new ArgumentNullException(nameof(carsRepository), "CarsRepository cannot be null");
+            _carRepository = carsRepository;
             _navigationService = navigationService;
             Cars.Clear();
             Task.Run(async () => await GetAllCarBrandsAsync());
@@ -218,6 +218,7 @@ namespace BCATestApp.ViewModel
                     _currentPage = Math.Max(1, Math.Min(value, MaxPage));
 
                     IsPagedownButtonEnable = _currentPage > 1;
+                    Debug.WriteLine(IsPagedownButtonEnable);
                     OnPropertyChanged();
                     UpdateFiltersForPageAsync();
                     OnPropertyChanged(nameof(CurrentPageText));
